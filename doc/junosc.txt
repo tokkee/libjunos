@@ -1,0 +1,54 @@
+JUNOSC(1)
+=========
+Sebastian "tokkee" Harl <sh@tokkee.org>
+version {package_version}, {build_date}
+:doctype: manpage
+
+NAME
+----
+junosc - a JUNOScript client application
+
+SYNOPSIS
+--------
+*junosc* ['options']
+
+DESCRIPTION
+-----------
+*junosc* is a client application to connect to routers running JUNOS software.
+It may be used to issue JUNOScript commands and display the response to the
+user.
+
+OPTIONS
+-------
+*-h*::
+	Display a usage and help summary and exit.
+
+*-V*::
+	Display the version number and copyright information.
+
+EXIT CODES
+----------
+*0*::
+	Success.
+
+*1*::
+	Failure (syntax or usage error).
+
+BUGS
+----
+None known.
+
+AUTHOR
+------
+junosc was written by Sebastian "tokkee" Harl <sh@tokkee.org>.
+
+COPYRIGHT
+---------
+Copyright (C) 2012 Sebastian "tokkee" Harl <sh@tokkee.org>
+
+This is free software under the terms of the BSD license, see the source for
+copying conditions. There is NO WARRANTY; not even for MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.
+
+// vim: set tw=78 sw=4 ts=4 noexpandtab spell spelllang=en_us :
+

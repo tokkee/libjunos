@@ -1,0 +1,28 @@
+# build system stuff
+.deps
+Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache
+compile
+config.*
+configure
+depcomp
+install-sh
+missing
+stamp-h1
+version
+
+# ltdl stuff
+libtool
+ltmain.sh
+
+# build output
+.libs
+*.la
+*.lo
+*.o
+junosc
+junosc.1
+libjunos_features.h
+

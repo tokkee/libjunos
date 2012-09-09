@@ -1,0 +1,46 @@
+libJUNOS
+========
+
+  This is a C client library to access routers running JUNOS software. It
+  offeres an API to connect to the device and issue JUNOScript commands.
+
+  This is free and open source software, licensed under the 2-clause BSD
+  license. See COPYING for details.
+
+Prerequisites
+-------------
+
+  To compile the libJUNOS package from source you need:
+
+  * A build environment: autotools, libtool, C compiler, ...
+
+  * A POSIX + Single UNIX Specification compatible C library.
+
+  * libssh2:
+    SSH client library used to connect to the router.
+
+  * libxml2:
+    GNOME XML library used to parse responses from the router.
+
+  * asciidoc, xsltproc:
+    The AsciiDoc text document format is used to write the manpages.
+
+Configuring / Compiling / Installing
+------------------------------------
+
+  To configure, build and install libJUNOS with the default settings, run
+  `./configure && make && make install'. For detailed, generic instructions
+  see INSTALL. For a complete list of configure options and their description,
+  run `./configure --help'.
+
+  By default, libJUNOS will be installed into `/opt/libjunos'. You can adjust
+  this setting by specifying the `--prefix' configure option - see INSTALL for
+  details. If you pass DESTDIR=<path> to `make install', <path> will be
+  prefixed to all installation directories. This might be useful when creating
+  packages for libJUNOS.
+
+Author
+------
+
+  Sebastian "tokkee" Harl <sh@tokkee.org>
+
