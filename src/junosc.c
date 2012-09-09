@@ -51,7 +51,7 @@ static void
 exit_usage(char *name, int status)
 {
 	printf(
-"Usage: %s -H <host> -u <user> [<options>] <command>\n"
+"Usage: %s -H <host> [<options>] <command>\n"
 
 "\nOptions:\n"
 "  -H <host>    hostname to connect to\n"

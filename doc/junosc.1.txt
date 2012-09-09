@@ -10,7 +10,7 @@ junosc - a JUNOScript client application
 
 SYNOPSIS
 --------
-*junosc* ['options']
+*junosc -H* '<hostname>' ['options'] '<command>'
 
 DESCRIPTION
 -----------
@@ -20,6 +20,23 @@ user.
 
 OPTIONS
 -------
+*-H* '<host>'::
+	Specify the hostname to connect to. Unless disabled by the *-n* option,
+	the hostname will be used to lookup further connection options in the
+	netrc(5) file.
+
+*-u* '<username>'::
+	Specify the username to connect with. Using this option will overwrite any
+	username specified the netrc(5) file.
+
+*-p* '<password>'::
+	Specify the password to connect with. Using this option will overwrite any
+	password specified in the netrc(5) file.
+
+*-n*::
+	If specified, no attempt will be made to lookup information in the
+	netrc(5) file.
+
 *-h*::
 	Display a usage and help summary and exit.
 
