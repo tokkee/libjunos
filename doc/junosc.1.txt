@@ -10,12 +10,12 @@ junosc - a JUNOScript client application
 
 SYNOPSIS
 --------
-*junosc -H* '<hostname>' ['options'] '<command>'
+*junosc -H* '<hostname>' ['options'] '<method>'
 
 DESCRIPTION
 -----------
 *junosc* is a client application to connect to routers running JUNOS software.
-It may be used to issue JUNOScript commands and display the response to the
+It may be used to issue JUNOScript method and display the response to the
 user.
 
 OPTIONS

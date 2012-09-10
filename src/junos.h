@@ -104,7 +104,7 @@ int
 junos_connect(junos_t *junos);
 
 xmlDocPtr
-junos_simple_command(junos_t *junos, const char *cmd);
+junos_simple_method(junos_t *junos, const char *name);
 
 int
 junos_disconnect(junos_t *junos);

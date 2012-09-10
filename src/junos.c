@@ -261,9 +261,9 @@ junos_disconnect(junos_t *junos)
 } /* junos_disconnect */
 
 xmlDocPtr
-junos_simple_command(junos_t *junos, const char *cmd)
+junos_simple_method(junos_t *junos, const char *name)
 {
-	char cmd_string[1024];
+	char method_string[1024];
 	char recv_buf[4096];
 	ssize_t status;
 
@@ -271,25 +271,26 @@ junos_simple_command(junos_t *junos, const char *cmd)
 
 	xmlDocPtr doc;
 
-	if ((! junos) || (! cmd)) {
+	if ((! junos) || (! name)) {
 		junos_set_error(junos, JUNOS_SYS_ERROR, EINVAL,
-				"junos_simple_command() requires the "
-				"'junos' and 'cmd' arguments");
+				"junos_simple_method() requires the "
+				"'junos' and 'name' arguments");
 		return NULL;
 	}
 
 	if (! junos->access) {
 		junos_set_error(junos, JUNOS_SYS_ERROR, EINVAL,
-				"Please call junos_connect() before submitting commands");
+				"Please call junos_connect() before invoking a method");
 		return NULL;
 	}
 
-	snprintf(cmd_string, sizeof(cmd_string),
-			"<rpc><%s/></rpc>", cmd);
-	status = junos_ssh_send(junos->access, cmd_string, strlen(cmd_string));
-	if (status != (ssize_t)strlen(cmd_string)) {
-		dprintf("Failed to send cmd '%s' (status %d)\n",
-				cmd_string, (int)status);
+	snprintf(method_string, sizeof(method_string),
+			"<rpc><%s/></rpc>", name);
+	status = junos_ssh_send(junos->access,
+			method_string, strlen(method_string));
+	if (status != (ssize_t)strlen(method_string)) {
+		dprintf("Failed to send method '%s' (status %d)\n",
+				method_string, (int)status);
 		return NULL;
 	}
 
@@ -344,7 +345,7 @@ junos_simple_command(junos_t *junos, const char *cmd)
 	}
 
 	return doc;
-} /* junos_simple_command */
+} /* junos_simple_method */
 
 /* error handling */
 

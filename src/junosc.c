@@ -51,7 +51,7 @@ static void
 exit_usage(char *name, int status)
 {
 	printf(
-"Usage: %s -H <host> [<options>] <command>\n"
+"Usage: %s -H <host> [<options>] <method>\n"
 
 "\nOptions:\n"
 "  -H <host>    hostname to connect to\n"
@@ -92,7 +92,7 @@ main(int argc, char **argv)
 	char *username = NULL;
 	char *password = NULL;
 
-	char *command  = NULL;
+	char *method   = NULL;
 
 	junos_t *junos;
 	xmlDocPtr doc;
@@ -134,11 +134,11 @@ main(int argc, char **argv)
 	}
 
 	if (optind != argc - 1) {
-		fprintf(stderr, "Missing command name\n");
+		fprintf(stderr, "Missing method name\n");
 		exit_usage(argv[0], 1);
 	}
 
-	command = argv[optind];
+	method = argv[optind];
 	++optind;
 
 	if (use_netrc
@@ -187,13 +187,13 @@ main(int argc, char **argv)
 	}
 
 	junos_clear_error(junos);
-	doc = junos_simple_command(junos, command);
+	doc = junos_simple_method(junos, method);
 	if (doc) {
 		xmlDocFormatDump(stderr, doc, /* format = */ 1);
 		xmlFreeDoc(doc);
 	}
 	else {
-		fprintf(stderr, "Command failed: %s\n", junos_get_errstr(junos));
+		fprintf(stderr, "Method failed: %s\n", junos_get_errstr(junos));
 	}
 
 	junos_disconnect(junos);
