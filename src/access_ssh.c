@@ -35,6 +35,7 @@
 
 #include <libssh2.h>
 
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <netdb.h>
 
