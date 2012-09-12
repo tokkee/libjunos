@@ -35,6 +35,7 @@
 
 #include <errno.h>
 
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -70,6 +71,93 @@ struct junos {
 /*
  * private helper functions
  */
+
+static int
+meth_append_arg(junos_strbuf_t *body, junos_strbuf_t *attrs,
+		int arg_type, va_list *ap)
+{
+	char *name = va_arg(*ap, char *);
+	ssize_t status;
+
+	if (! name) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	switch (arg_type) {
+		case JUNOS_ARG_TOGGLE: /* fall thru */
+		case JUNOS_ARG_TOGGLE_NO:
+			{
+				int value = va_arg(*ap, int);
+				if (value)
+					status = junos_strbuf_sprintf(body,
+							"    <%s/>\n", name);
+				else if (arg_type == JUNOS_ARG_TOGGLE_NO)
+					status = junos_strbuf_sprintf(body,
+							"    <no-%s/>\n", name);
+			}
+			break;
+		case JUNOS_ARG_STRING:
+			{
+				char *value = va_arg(*ap, char *);
+				status = junos_strbuf_sprintf(body,
+						"    <%s>%s</%s>\n", name,
+						value ? value : "", name);
+			}
+			break;
+		case JUNOS_ARG_INTEGER:
+			{
+				int value = va_arg(*ap, int);
+				status = junos_strbuf_sprintf(body,
+						"    <%s>%i</%s>\n",
+						name, value, name);
+			}
+			break;
+		case JUNOS_ARG_DOUBLE:
+			{
+				double value = va_arg(*ap, double);
+				status = junos_strbuf_sprintf(body,
+						"    <%s>%lf</%s>\n",
+						name, value, name);
+			}
+			break;
+		case JUNOS_ARG_DOM:
+			{
+				status = junos_strbuf_sprintf(body,
+						"    %s\n", name);
+			}
+			break;
+		case JUNOS_ATTR_STRING:
+			{
+				char *value = va_arg(*ap, char *);
+				status = junos_strbuf_sprintf(attrs,
+						" %s=\"%s\"",
+						name, value ? value : "");
+			}
+			break;
+		case JUNOS_ATTR_INTEGER:
+			{
+				int value = va_arg(*ap, int);
+				status = junos_strbuf_sprintf(attrs,
+						" %s=\"%s\"", name, value);
+			}
+			break;
+		case JUNOS_ATTR_DOUBLE:
+			{
+				double value = va_arg(*ap, double);
+				status = junos_strbuf_sprintf(attrs,
+						" %s=\"%s\"", name, value);
+			}
+			break;
+		default:
+			errno = EINVAL;
+			return -1;
+			break;
+	}
+	if (status < 0)
+		return -1;
+	return 0;
+} /* meth_append_arg */
 
 static ssize_t
 read_lines(junos_t *junos, char *buf, size_t buf_len)
@@ -261,19 +349,29 @@ junos_disconnect(junos_t *junos)
 } /* junos_disconnect */
 
 xmlDocPtr
-junos_simple_method(junos_t *junos, const char *name)
+junos_invoke_method(junos_t *junos, const char *name, ...)
 {
-	char method_string[1024];
+	junos_strbuf_t *method_buf;
+	junos_strbuf_t *body_buf;
+	junos_strbuf_t *attr_buf;
+
+	char  *method_string;
+	size_t method_len;
+	char  *body_string;
+	char  *attr_string;
+
 	char recv_buf[4096];
 	ssize_t status;
 
 	int xml_status;
-
 	xmlDocPtr doc;
+
+	va_list ap;
+	int arg_type;
 
 	if ((! junos) || (! name)) {
 		junos_set_error(junos, JUNOS_SYS_ERROR, EINVAL,
-				"junos_simple_method() requires the "
+				"junos_invoke_method() requires the "
 				"'junos' and 'name' arguments");
 		return NULL;
 	}
@@ -284,15 +382,75 @@ junos_simple_method(junos_t *junos, const char *name)
 		return NULL;
 	}
 
-	snprintf(method_string, sizeof(method_string),
-			"<rpc><%s/></rpc>", name);
-	status = junos_ssh_send(junos->access,
-			method_string, strlen(method_string));
-	if (status != (ssize_t)strlen(method_string)) {
-		dprintf("Failed to send method '%s' (status %d)\n",
-				method_string, (int)status);
+	errno = 0;
+	method_buf = junos_strbuf_new(1024);
+	body_buf   = junos_strbuf_new(1024);
+	attr_buf   = junos_strbuf_new(1024);
+
+#define BUF_FREE() \
+	do { \
+		junos_strbuf_free(method_buf); \
+		method_buf    = NULL; \
+		method_string = NULL; \
+		method_len    = 0;    \
+		junos_strbuf_free(body_buf); \
+		body_buf      = NULL; \
+		body_string   = NULL; \
+		junos_strbuf_free(attr_buf); \
+		attr_buf      = NULL; \
+		attr_string   = NULL; \
+	} while (0)
+
+	if ((! method_buf) || (! body_buf) || (! attr_buf)) {
+		junos_set_error(junos, JUNOS_SYS_ERROR, errno,
+				"Failed to allocate string buffers");
+		BUF_FREE();
 		return NULL;
 	}
+
+	va_start(ap, name);
+	while ((arg_type = va_arg(ap, int)) != JUNOS_NO_ARGS) {
+		if (meth_append_arg(body_buf, attr_buf, arg_type, &ap)) {
+			BUF_FREE();
+			junos_set_error(junos, JUNOS_SYS_ERROR, errno,
+					"Failed to append argument (type %d) to method '%s'",
+					arg_type, name);
+			return NULL;
+		}
+	}
+	va_end(ap);
+
+	body_string = junos_strbuf_string(body_buf);
+	attr_string = junos_strbuf_string(attr_buf);
+
+	if (body_string[0])
+		junos_strbuf_sprintf(method_buf,
+				"<rpc>\n"
+				"  <%s%s>\n%s"
+				"  </%s>\n"
+				"</rpc>",
+				name, attr_string, body_string, name);
+	else
+		junos_strbuf_sprintf(method_buf,
+				"<rpc>\n"
+				"  <%s%s/>\n"
+				"</rpc>",
+				name, attr_string);
+
+	method_string = junos_strbuf_string(method_buf);
+	method_len    = junos_strbuf_len(method_buf);
+
+	dprintf(" -> %s\n", method_string);
+	status = junos_ssh_send(junos->access, method_string, method_len);
+
+	if (status != (ssize_t)method_len) {
+		dprintf("Failed to send method '%s' (status %d)\n",
+				method_string, (int)status);
+		BUF_FREE();
+		return NULL;
+	}
+
+	BUF_FREE();
 
 	errno = 0;
 	junos->xml_ctx = xmlCreatePushParserCtxt(/* sax = */ NULL,
@@ -345,7 +503,7 @@ junos_simple_method(junos_t *junos, const char *name)
 	}
 
 	return doc;
-} /* junos_simple_method */
+} /* junos_invoke_method */
 
 /* error handling */
 

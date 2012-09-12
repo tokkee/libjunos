@@ -52,6 +52,21 @@ extern "C" {
 
 typedef struct junos junos_t;
 
+/* method invocation */
+
+enum {
+	JUNOS_NO_ARGS = 0,
+	JUNOS_ARG_TOGGLE,
+	JUNOS_ARG_TOGGLE_NO,
+	JUNOS_ARG_STRING,
+	JUNOS_ARG_INTEGER,
+	JUNOS_ARG_DOUBLE,
+	JUNOS_ARG_DOM,
+	JUNOS_ATTR_STRING,
+	JUNOS_ATTR_INTEGER,
+	JUNOS_ATTR_DOUBLE,
+};
+
 /* string buffer */
 
 typedef struct junos_strbuf junos_strbuf_t;
@@ -110,7 +125,10 @@ int
 junos_connect(junos_t *junos);
 
 xmlDocPtr
-junos_simple_method(junos_t *junos, const char *name);
+junos_invoke_method(junos_t *junos, const char *name, ...);
+
+#define junos_simple_method(junos, name) \
+	junos_invoke_method((junos), (name), JUNOS_NO_ARGS)
 
 int
 junos_disconnect(junos_t *junos);
