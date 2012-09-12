@@ -331,7 +331,7 @@ junos_connect(junos_t *junos)
 	}
 
 	read_lines(junos, recv_buf, sizeof(recv_buf));
-	dprintf(" ->  %s", recv_buf);
+	dprintf(" <-  %s", recv_buf);
 	return 0;
 } /* junos_connect */
 
@@ -468,7 +468,7 @@ junos_invoke_method(junos_t *junos, const char *name, ...)
 		if (status < 0)
 			break;
 
-		dprintf(" ->  %s", recv_buf);
+		dprintf(" <-  %s", recv_buf);
 
 		xml_status = xmlParseChunk(junos->xml_ctx, recv_buf, (int)status,
 				/* terminate = */ 0);
