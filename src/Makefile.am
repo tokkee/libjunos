@@ -8,7 +8,8 @@ BUILT_SOURCES = libjunos_features.h
 libjunos_la_SOURCES = junos.c junos.h \
 		libjunos_features.h \
 		access_ssh.c \
-		netrc.c
+		netrc.c \
+		strbuf.c
 libjunos_la_CFLAGS = $(AM_CFLAGS) \
 		@LIBSSH2_CFLAGS@ \
 		@LIBXML2_CFLAGS@

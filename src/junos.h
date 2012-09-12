@@ -52,6 +52,12 @@ extern "C" {
 
 typedef struct junos junos_t;
 
+/* string buffer */
+
+typedef struct junos_strbuf junos_strbuf_t;
+
+/* netrc */
+
 typedef struct {
 	char *machine;
 	char *login;
@@ -111,6 +117,28 @@ junos_disconnect(junos_t *junos);
 
 void
 junos_free(junos_t *junos);
+
+/*
+ * string buffer
+ */
+
+junos_strbuf_t *
+junos_strbuf_new(size_t size);
+
+void
+junos_strbuf_free(junos_strbuf_t *strbuf);
+
+ssize_t
+junos_strbuf_sprintf(junos_strbuf_t *strbuf, const char *fmt, ...);
+
+ssize_t
+junos_strbuf_vsprintf(junos_strbuf_t *strbuf, const char *fmt, va_list ap);
+
+char *
+junos_strbuf_string(junos_strbuf_t *strbuf);
+
+size_t
+junos_strbuf_len(junos_strbuf_t *strbuf);
 
 /*
  * netrc
